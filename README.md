@@ -15,12 +15,13 @@ cd <repository_directory>
 ```
 2. Prepare Your Files
 - <b>ZIP File</b> you want to crack
-- <b>Wordlist</b> since this whole operation rely on your dictionary. For example, you can find a lots of wordlist from <a href="https://github.com/duyet/bruteforce-database"> this database </a>
+- <b>Wordlist</b> since this whole operation rely on your password dictionary. For example, you can find a lots of wordlist from <a href="https://github.com/duyet/bruteforce-database"> this database </a>
 3. Run the Script
 ```
 python brute_force.py
 ```
-4. Follow the Prompts
+4. Follow the Prompts <br>
+
 Enter <b>0</b> to exit the script and <b>1</b> to start the attack. You can understand this by examining the code. <br>
 For example :
 ```
