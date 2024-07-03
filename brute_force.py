@@ -1,61 +1,49 @@
 import os
-import zipfile
+import subprocess
 from time import time
+from multiprocessing import Process
 
 def cls():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-cls()
+def brute_force(file_path, word_list, start, end):
+    for i, password in enumerate(word_list[start:end], start=start+1):
+        password = password.strip()
+        print(f"[*] Trying password {i}: {password}")
 
-try:
-    a = int(input(" [?] Enter Number: "))
-except ValueError:
-    print(" [!] Invalid Input")
-    quit()
+        result = subprocess.run(['7z', 'x', '-p' + password, file_path], 
+                                capture_output=True, text=True)
+        if "Everything is Ok" in result.stdout:
+            end_time = time()
+            print(f"\n [*] Password Found :)\n [*] Password: {password}\n")
+            print(f" [***] Took {end_time - start_time:.2f} seconds to crack the password. That is, {i / (end_time - start_time):.2f} attempts per second.")
+            return
 
-if a == 0:
+    print(" [X] Sorry, Password Not Found :(")
+
+if __name__ == "__main__":
     cls()
-    print(" [!] Good Bye :)")
-    quit()
-elif a == 1:
-    cls()
-    textzippass = ''''''
-    print(textzippass)
-    file_path = input(" [+] ZIP File Address: ")
-    print("")
-    word_list = input(" [+] Password List Address: ")
+    print("[*] Welcome to ZIP Password Brute Forcer!\n")
+    file_path = input(" [+] ZIP File Address: ").strip().strip("'").strip('"')
+    word_list_path = input(" [+] Password List Address: ").strip().strip("'").strip('"')
+    num_processes = int(input(" [+] Number of Processes: "))
 
-    def main(file_path, word_list):
-        try:
-            zip_ = zipfile.ZipFile(file_path)
-        except zipfile.BadZipFile:
-            print(" [!] Please check the file's Path. It doesn't seem to be a ZIP file.")
-            quit()
+    with open(word_list_path, "r", encoding="ISO-8859-1", errors="ignore") as f:
+        word_list = f.readlines()
 
-        password = None
-        i = 0
-        c_t = time()
+    chunk_size = len(word_list) // num_processes
 
-        try:
-            with open(word_list, "r") as f:
-                passes = f.readlines()
-        except FileNotFoundError:
-            print(" [!] Password list file not found.")
-            quit()
+    processes = []
+    start_time = time()
 
-        for x in passes:
-            i += 1
-            password = x.strip()
-            try:
-                zip_.extractall(pwd=password.encode('utf-8'))
-                t_t = time() - c_t
-                print(f"\n [*] Password Found :)\n [*] Password: {password}\n")
-                print(f" [***] Took {t_t:.2f} seconds to crack the Password. That is, {i/t_t:.2f} attempts per second.")
-                quit()
-            except (RuntimeError, zipfile.BadZipFile):
-                pass
+    for i in range(num_processes):
+        start = i * chunk_size
+        end = (i + 1) * chunk_size if i < num_processes - 1 else len(word_list)
+        process = Process(target=brute_force, args=(file_path, word_list, start, end))
+        processes.append(process)
+        process.start()
 
-        print(" [X] Sorry, Password Not Found :(")
-        quit()
+    for process in processes:
+        process.join()
 
-    main(file_path, word_list)
+    print("[*] All processes finished.")
